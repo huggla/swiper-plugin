@@ -1,4 +1,4 @@
-name: Bygg och packa Swiper-plugin
+name: Build and package the Swiper plugin
 
 on:
   workflow_dispatch:
