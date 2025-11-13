@@ -546,15 +546,48 @@ const Swiper = function Swiper({  circleRadius = 50,
   }
 
   function setupLayers(viewer) {
-    const layers = findSwiperLayers(viewer);
-    if (layers.length <= 0) {
-      return false;
+    const swiperLayerObjects = viewer.getLayers().filter(l => 
+      l.get('isSwiperLayer') && l.get('name').endsWith('__swiper')
+    );
+    if (swiperLayerObjects.length === 0) return false;
+
+    let configPromise = Promise.resolve({ layers: [] });
+    if (typeof origoConfigPath === 'string') {
+      configPromise = fetch(origoConfigPath).then(r => r.json());
+    } else if (origoConfigPath && origoConfigPath.layers) {
+      configPromise = Promise.resolve(origoConfigPath);
     }
 
-    console.log('Swiper defined layers', layers.length, layers.map(l => l.get('name')))
+    return configPromise.then(config => {
+      const orderedLayers = [];
+      config.layers.forEach(layerConfig => {
+        if (layerConfig.isSwiperLayer) {
+          const nameWithSuffix = layerConfig.name + '__swiper';
+          const layer = viewer.getLayer(nameWithSuffix);
+          if (layer) orderedLayers.push(layer);
+        }
+      });
 
-    setSwiperLayers(layers);
-    return true;
+      const finalLayers = orderedLayers.length > 0 ? orderedLayers : swiperLayerObjects;
+
+      _swLayers = {};
+      finalLayers.forEach(la => {
+        const layerName = la.get('name');
+        _swLayers[layerName] = new SwiperLayer(la, false, false);
+        if (layerName.replace('__swiper', '').toLowerCase() === defaultLayer.toLowerCase()) {
+          _visibleLeftLayer = la;
+        }
+      });
+
+      const orderedArray = finalLayers.map(l => _swLayers[l.get('name')]);
+      setTimeout(() => swiperLegend.render(orderedArray), 0);
+
+      return true;
+    }).catch(err => {
+      console.error('Swiper config error:', err);
+      setSwiperLayers(swiperLayerObjects);
+      return true;
+    });
   }
 
   function closeSwiperTool() {
@@ -747,7 +780,6 @@ const Swiper = function Swiper({  circleRadius = 50,
       swiperLegendButtonEl = document.getElementById(swiperLegendButton.getId());
 
       swiperLegendButton.dispatch('render');
-      swiperLegend.render(_swLayers);
       this.dispatch('render');
     },
   });
