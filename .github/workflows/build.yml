@@ -7,21 +7,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Klona repot
+      - name: Clone repository
         uses: actions/checkout@v4
 
-      - name: Sätt upp Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Installera beroenden
+      - name: Install dependencies
         run: npm install
 
-      - name: Bygg projektet
+      - name: Build project
         run: npm run build
 
-      - name: Packa artefakter (build)
+      - name: Package artefacts (build)
         uses: actions/upload-artifact@v4
         with:
           name: build
