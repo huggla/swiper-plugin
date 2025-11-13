@@ -76,7 +76,7 @@ const SwiperLegend = function SwiperLegend(options = {
     }
   }
 
-  function resetLayerList(swiperLayers) {
+  function resetLayerList(swiperLayersArray) {
     renderLayersList(swiperLayers);
   }
 
@@ -86,12 +86,12 @@ const SwiperLegend = function SwiperLegend(options = {
       : uncheckIcon;
   }
 
-  function renderLayersList(swiperLayers) {
+  function renderLayersList(swiperLayersArray) {
     contentContainerEl.textContent = '';
 
-    const keys = Object.keys(swiperLayers);
-    keys.forEach(layerId => {
-      const swLayer = swiperLayers[layerId];
+    swiperLayersArray.forEach(swLayer => {
+      const layer = swLayer.getLayer();
+      const layerId = layer.get('name');
       const legendLayersListItem = document.createElement('li');
       legendLayersListItem.id = layerId;
       legendLayersListItem.className = `legend-list-item ${swLayer.inUse() ? 'disabled' : ''}`;
@@ -106,14 +106,14 @@ const SwiperLegend = function SwiperLegend(options = {
       });
       const divName = Origo.ui.Element({
         cls: `text-smaller padding-x-small grow pointer no-select overflow-hidden`,
-        innerHTML: swLayer.getLayer().get('title')
+        innerHTML: layer.get('title') || layerId.replace('__swiper', '')
       });
       
       legendLayersListItem.innerHTML = `${divName.render()} ${iconToShow.render()}`;
       contentContainerEl.appendChild(legendLayersListItem);
 
       legendLayersListItem.addEventListener('click', () => {
-        if (options.showLayer(layerId)) {
+        if (options.showLayer(layerId.replace('__swiper', ''))) {
           resetLayerList(swiperLayers);
         }
       });
@@ -128,7 +128,7 @@ const SwiperLegend = function SwiperLegend(options = {
       touchMode = 'ontouchstart' in document.documentElement;
       target = `${viewer.getMain().getId()}`;
     },
-    render(swiperLayers) {
+    render(swiperLayersArray) {
       legendLayerContainer = document.createElement('div');
       legendLayerContainer.className = 'legend-layer-container';
       legendLayerContainer.classList.add('legend-layer-container', 'hidden');
@@ -155,7 +155,7 @@ const SwiperLegend = function SwiperLegend(options = {
       legendLayerContainer.appendChild(contentContainerEl);
 
       makeElementDraggable(legendLayerContainer);
-      renderLayersList(swiperLayers);
+      renderLayersList(swiperLayersArray);
       this.dispatch('render');
     },
     setSwiperLegendVisible,
