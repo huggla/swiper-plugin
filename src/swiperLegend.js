@@ -77,7 +77,7 @@ const SwiperLegend = function SwiperLegend(options = {
   }
 
   function resetLayerList(swiperLayersArray) {
-    renderLayersList(swiperLayers);
+    renderLayersList(swiperLayersArray);
   }
 
   function getCheckIcon(isChecked) {
